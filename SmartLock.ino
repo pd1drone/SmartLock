@@ -97,7 +97,6 @@ void loop() {
     String Message = "Alarm has been turned OFF";
     SendMessage(Message);
     noTone(buzzer);
-    isBuzzerOn = false;
   }
 
   //Check if isLockBypassed Then Notify the lock has been bypassed
