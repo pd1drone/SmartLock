@@ -8,7 +8,7 @@ SoftwareSerial sim(10, 9); //sim Tx & Rx is connected to Arduino #10 & #9
 const int buzzer = 4; //buzzer to arduino pin 9
 const int GPSbutton = 7; //GPSbutton to arduino pin 7
 const int BuzzeroffBtn = 8; //BuzzeroffBtn to arduino pin 8
-String number = "+639264562589"; //-> change with your number
+String number = "+639265556648"; //-> change with your number
 String _buffer; // buffer string for SMS text
 String SmsString;
 
@@ -18,6 +18,8 @@ float gpslat, gpslon;
 float latt1, long1;
 float latt2;
 float long2;
+
+bool isBuzzerOn = false;
 
 String GoogleMapLink = "https://www.google.com.ph/maps/place/";
 
@@ -95,16 +97,21 @@ void loop() {
     String Message = "Alarm has been turned OFF";
     SendMessage(Message);
     noTone(buzzer);
+    isBuzzerOn = false;
   }
 
   //Check if isLockBypassed Then Notify the lock has been bypassed
   int isLockByPassed = analogRead(A1);
   Serial.print("LockBypass: ");
   Serial.println(isLockByPassed);
-  if (isLockByPassed > 50) {
-    SendMessage("The lock has been bypass!");
-    tone(buzzer, 1000);
+  if (!isBuzzerOn){
+      if (isLockByPassed > 200) {
+      SendMessage("The lock has been bypass!");
+      tone(buzzer, 1000);
+      isBuzzerOn = true;
+    }
   }
+
   //Check if offGPSTracking Then set IsGPSTrackingon to false and reset lattitude and longitude values
   int offGPSTracking = analogRead(A2);
   Serial.print("GPS TRACKING OFF: ");
