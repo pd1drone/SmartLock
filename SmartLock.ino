@@ -105,7 +105,7 @@ void loop() {
   Serial.print("LockBypass: ");
   Serial.println(isLockByPassed);
   if (!isBuzzerOn){
-      if (isLockByPassed > 200) {
+      if (isLockByPassed > 100) {
       SendMessage("The lock has been bypass!");
       tone(buzzer, 1000);
       isBuzzerOn = true;
