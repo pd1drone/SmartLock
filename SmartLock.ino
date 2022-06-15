@@ -16,8 +16,6 @@ String SmsString;
 float Distance;
 float gpslat, gpslon;
 float latt1, long1;
-float latt2;
-float long2;
 
 bool isBuzzerOn = false;
 
@@ -52,42 +50,17 @@ void loop() {
         if (gps.encode(Serial1.read()))
         {
           gps.f_get_position(&gpslat, &gpslon);
-          if(latt1 ==0.0 && long2 == 0.0){
-            latt1= gpslat;
-            long1= gpslon;          
-          } else {
-            latt2= gpslat;
-            long2= gpslon;
-          }
-  
+          latt1= gpslat;
+          long1= gpslon;          
           delay(1000);
           Serial.print("LAT 1: ");        
           Serial.println(latt1, 6);
           Serial.print("LON 1: ");
           Serial.println(long1, 6);
-          Serial.print("LAT 2: ");
-          Serial.println(latt2, 6);
-          Serial.print("LON 2: ");
-          Serial.println(long2, 6);
         }
       }
-   if( latt1 != 0.0 || latt2 != 0.0 || long1 != 0.0 || long2 !=0.0){
-    Distance = Getdistance(latt1, latt2, long1, long2);
-    Serial.print("DISTANCE: ");
-    Serial.println(Distance);
-   }
-     
+      
   GetSMSText();
-  // read if gps pushbtn has been pushed then set GPS tracking on
-  int GPSbtnOn = digitalRead(GPSbutton);
-  Serial.print("GPS BUTTON: ");
-  Serial.println(GPSbtnOn);
-  if (GPSbtnOn == 0) {
-    //Set IsGPSTrackingon to true
-    String Message = "GPS Tracking ON";
-    SendMessage(Message);
-    IsGPSTrackingon = true;
-  }
 
   // read if buzzer pushbtn has been pushed then set turn-off buzzer
   int Buzzeroff = digitalRead(BuzzeroffBtn);
@@ -110,35 +83,6 @@ void loop() {
       isBuzzerOn = true;
     }
   }
-
-  //Check if offGPSTracking Then set IsGPSTrackingon to false and reset lattitude and longitude values
-  int offGPSTracking = analogRead(A2);
-  Serial.print("GPS TRACKING OFF: ");
-  Serial.println(offGPSTracking);
-  if (offGPSTracking > 50) {
-    String Message = "GPS Tracking is now OFF";
-    SendMessage(Message);
-    IsGPSTrackingon = false;
-    latt1 = 0.000000;
-    long1 = 0.000000;
-    latt2 = 0.000000;
-    long2 = 0.000000;
-
-  }
-  // Check if IsGPSTrackingon is true then TrackGPSCoordinates and compute distance
-  if (IsGPSTrackingon) {
-    // Check if bike has been moved if true then Notify the coordinates of the bike every 10 seconds
-    if (Distance > 50) {
-        String Link = GoogleMapLink + String(latt2,6) + "," + String(long2,6);
-        String DistanceMessage = "Current Coordinates: Lat: " + String(latt2,6) + " Long: " + String(long2,6) + "\n Google Map Link: " + Link;
-        String Message = "Your bike was moved from another location";
-        SendMessage(Message);
-        delay(1000);
-        SendMessage(DistanceMessage);
-      }
-  }
-
-  
 }
 
 
@@ -151,6 +95,7 @@ void RecieveMessage()
   delay(1000);
   Serial.write ("Unread Message done");
 }
+
 String _readSerial() {
   //sim.listen();
   if (sim.available() > 0) {
@@ -165,8 +110,8 @@ void GetSMSText() {
     Serial.println(SmsString);
     if (SmsString.indexOf("+CMT:") > 0) {
       if (SmsString.indexOf("Send current") > 0) {
-        String Link = "GoogleMap Link: " + GoogleMapLink + String(latt2,6) + "," + String(long2,6);
-        String SendCurrLocation = "The current Location of your bike is: Latitude: " + String(latt2,6) + " Longitude: " + String(long2,6) + "\n" + Link;
+        String Link = "GoogleMap Link: " + GoogleMapLink + String(latt1,6) + "," + String(long1,6);
+        String SendCurrLocation = "The current Location of your bike is: Latitude: " + String(latt1,6) + " Longitude: " + String(long1,6) + "\n" + Link;
         SendMessage(SendCurrLocation);
       }
     }
@@ -188,26 +133,4 @@ void SendMessage(String in)
   sim.println((char)26);// ASCII code of CTRL+Z
   delay(1000);
   _buffer = _readSerial();
-}
-
-float Getdistance(float lat1, float lat2, float lon1, float lon2) {
-
-  // Convert Degree to Radians
-  lon1 = lon1 * PI / 180;
-  lon2 = lon2 * PI / 180;
-  lat1 = lat1 * PI / 180;
-  lat2 = lat2 * PI / 180;
-
-  // Haversine formula
-  float dlon = lon2 - lon1;
-  float dlat = lat2 - lat1;
-  float a = pow(sin(dlat / 2), 2) + cos(lat1) * cos(lat2) * pow(sin(dlon / 2), 2);
-
-  float c = 2 * asin(sqrt(a));
-
-  // Radius of earth in kilometers.
-  float r = 6371;
-
-  // calculate the result
-  return (c * r * 1000); //result unit is meters
 }
