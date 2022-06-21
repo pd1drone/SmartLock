@@ -8,7 +8,7 @@ SoftwareSerial sim(10, 9); //sim Tx & Rx is connected to Arduino #10 & #9
 const int buzzer = 4; //buzzer to arduino pin 9
 const int GPSbutton = 7; //GPSbutton to arduino pin 7
 const int BuzzeroffBtn = 8; //BuzzeroffBtn to arduino pin 8
-String number = "+639265556648"; //-> change with your number
+String number = "+639164385846"; //-> change with your number
 String _buffer; // buffer string for SMS text
 String SmsString;
 
@@ -44,7 +44,6 @@ void loop() {
   // put your main code here, to run repeatedly:
   // Wait for Text Message
   //GetCoordinates();
-  //Serial1.listen();
   while (Serial1.available())
       {
         if (gps.encode(Serial1.read()))
